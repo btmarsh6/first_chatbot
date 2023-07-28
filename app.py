@@ -5,7 +5,7 @@ from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
 
-openai_api_key = st.secrets["OPENAI_KEY"]
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 
 # Connect to the database and execute the SQL script
 conn = sqlite3.connect('chatbot_database.db')
