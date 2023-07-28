@@ -10,8 +10,7 @@ from langchain.llms.openai import OpenAI
 st.set_page_config(page_title='SQL Chatbot')
 with st.sidebar:
     st.title('SQL Chatbot')
-    with st.echo():
-        st.write("Use me to help you explore your database!")
+    st.write("Use me to help you explore your database!")
 
 # Connect to the database
 conn = sqlite3.connect('chatbot_database.db')
