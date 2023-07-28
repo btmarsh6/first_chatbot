@@ -11,10 +11,10 @@ st.set_page_config(page_title='SQL Chatbot')
 
 # Connect to the database and execute the SQL script
 conn = sqlite3.connect('chatbot_database.db')
-with open('./Chinook_Sqlite.sql', 'r',encoding='cp1252', errors='replace') as f:
-    sql_script = f.read()
-conn.executescript(sql_script)
-conn.close()
+# with open('./Chinook_Sqlite.sql', 'r',encoding='cp1252', errors='replace') as f:
+#     sql_script = f.read()
+# conn.executescript(sql_script)
+# conn.close()
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
