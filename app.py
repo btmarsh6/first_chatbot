@@ -6,15 +6,16 @@ from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
 
 
-# App Title
+# App Title and Page Config
 st.set_page_config(page_title='SQL Chatbot')
+with st.sidebar:
+    st.title('SQL Chatbot')
+    with st.echo():
+        st.write("Use me to help you explore your database!")
 
-# Connect to the database and execute the SQL script
+# Connect to the database
 conn = sqlite3.connect('chatbot_database.db')
-# with open('./Chinook_Sqlite.sql', 'r',encoding='cp1252', errors='replace') as f:
-#     sql_script = f.read()
-# conn.executescript(sql_script)
-# conn.close()
+
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
