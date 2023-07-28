@@ -12,7 +12,7 @@ with st.sidebar:
     st.title('SQL Chatbot')
     st.write("Use me to help you explore your database!")
 
-# Connect to the database
+# Connect to the database. You can replace the string with whatever database you want the chatbot to use.
 conn = sqlite3.connect('chatbot_database.db')
 
 
