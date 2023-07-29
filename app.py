@@ -1,9 +1,11 @@
 import streamlit as st
 import sqlite3
-from langchain.agents import create_sql_agent
+from langchain.agents import create_sql_agent, AgentExecutor
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
+
+from langchain.memory import ConversationBufferMemory
 
 
 # App Title and Page Config
@@ -19,11 +21,13 @@ conn = sqlite3.connect('chatbot_database.db')
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
 toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
-agent_executor = create_sql_agent(
+agent = create_sql_agent(
     llm=OpenAI(temperature=0),
     toolkit=toolkit,
     verbose=True
 )
+memory = ConversationBufferMemory()
+agent_executor = AgentExecutor(agent=agent, memory=memory)
 
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
