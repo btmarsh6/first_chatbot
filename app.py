@@ -26,20 +26,24 @@ toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
 #     toolkit=toolkit,
 #     verbose=True
 # )
-memory = ConversationBufferMemory(memory_key="chat_history")
-suffix = """Begin!"
+SQL_suffix = """Begin!
 
-        {chat_history}
-        Question: {input}
-        {agent_scratchpad}"""
+History: {history}
+Question: {input}
+Thought: I should look at the tables in the database to see what I can query. Then I should query the schema of the most relevant tables.
+{agent_scratchpad}"""
 
 agent_executor = create_sql_agent(
     llm=OpenAI(temperature=0),
     toolkit=toolkit,
     verbose=True,
-    suffix=suffix,
-    input_variables=["input", "chat_history", "agent_scratchpad"],
-    memory=memory
+    agent_executor_kwargs={
+        "memory": ConversationBufferMemory(
+            input_key="input", memory_key="history", return_messages=True
+        )
+    },
+    suffix=SQL_suffix,
+    input_variables=["input", "history", "agent_scratchpad"],
 )
 
 # Store LLM generated responses
