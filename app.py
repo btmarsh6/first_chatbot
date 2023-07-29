@@ -33,7 +33,7 @@ suffix = """Begin!"
         Question: {input}
         {agent_scratchpad}"""
 
-sql_agent = create_sql_agent(
+agent_executor = create_sql_agent(
     llm=OpenAI(temperature=0),
     toolkit=toolkit,
     verbose=True,
