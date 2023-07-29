@@ -4,7 +4,8 @@ from langchain.agents import create_sql_agent, AgentExecutor
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
-
+from langchain.chat_models.openai import ChatOpenAI
+from langchain.agents.agent_types import AgentType
 from langchain.memory import ConversationBufferMemory
 
 
@@ -20,31 +21,33 @@ conn = sqlite3.connect('chatbot_database.db')
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
+# toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
 # agent_executor = create_sql_agent(
 #     llm=OpenAI(temperature=0),
 #     toolkit=toolkit,
 #     verbose=True
 # )
-SQL_suffix = """Begin!
+memory = ConversationBufferMemory(memory_key = 'history' , input_key = 'input')
+llm = ChatOpenAI(model_name = 'gpt-3.5-turbo' , temperature = 0)
+suffix = """Begin!
 
-History: {history}
+Relevant pieces of previous conversation:
+{history}
+(You do not need to use these pieces of information if not relevant)
+
 Question: {input}
-Thought: I should look at the tables in the database to see what I can query. Then I should query the schema of the most relevant tables.
-{agent_scratchpad}"""
-
+Thought: I should look at the tables in the database to see what I can query.  Then I should query the schema of the most relevant tables.
+{agent_scratchpad}
+"""
 agent_executor = create_sql_agent(
-    llm=OpenAI(temperature=0),
-    toolkit=toolkit,
-    verbose=True,
-    agent_executor_kwargs={
-        "memory": ConversationBufferMemory(
-            input_key="input", memory_key="history", return_messages=True
-        )
-    },
-    suffix=SQL_suffix,
-    input_variables=["input", "history", "agent_scratchpad"],
+    llm = llm,
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm),
+    agent_type = AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    input_variables = ["input", "agent_scratchpad","history"],
+    suffix = suffix, # must have history as variable,
+    agent_executor_kwargs = {'memory':memory}
 )
+
 
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
