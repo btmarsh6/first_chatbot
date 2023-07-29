@@ -21,13 +21,26 @@ conn = sqlite3.connect('chatbot_database.db')
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
 toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
-agent = create_sql_agent(
+# agent_executor = create_sql_agent(
+#     llm=OpenAI(temperature=0),
+#     toolkit=toolkit,
+#     verbose=True
+# )
+memory = ConversationBufferMemory(memory_key="chat_history")
+suffix = """Begin!"
+
+        {chat_history}
+        Question: {input}
+        {agent_scratchpad}"""
+
+sql_agent = create_sql_agent(
     llm=OpenAI(temperature=0),
     toolkit=toolkit,
-    verbose=True
+    verbose=True,
+    suffix=suffix,
+    input_variables=["input", "chat_history", "agent_scratchpad"],
+    memory=memory
 )
-memory = ConversationBufferMemory()
-agent_executor = AgentExecutor(agent=agent, memory=memory)
 
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
