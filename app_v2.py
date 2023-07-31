@@ -58,12 +58,12 @@ st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function for generating response
 def generate_response(prompt_input):
-    string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-    for dict_message in st.session_state.messages:
-        if dict_message["role"] == "user":
-            string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
-        else:
-            string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
+    # string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
+    # for dict_message in st.session_state.messages:
+    #     if dict_message["role"] == "user":
+    #         string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
+    #     else:
+    #         string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
     memory.load_memory_variables({})
     output = agent_executor.run(prompt_input)
     return output
