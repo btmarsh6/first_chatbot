@@ -1,13 +1,10 @@
 import streamlit as st
 import sqlite3
-from langchain.agents import ZeroShotAgent, create_sql_agent, AgentExecutor
+from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
-from langchain.chat_models.openai import ChatOpenAI
-from langchain.agents.agent_types import AgentType
 from langchain.memory import ConversationBufferMemory
-from langchain import SQLDatabaseChain
 
 
 # App Title and Page Config
@@ -67,6 +64,7 @@ def generate_response(prompt_input):
             string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
         else:
             string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
+    memory.load_memory_variables({})
     output = agent_executor.run(prompt_input)
     return output
 
