@@ -67,7 +67,7 @@ def generate_response(prompt_input):
             string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
         else:
             string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
-    output = agent_chain.run(prompt_input)
+    output = agent_executor.run(prompt_input)
     return output
 
 # User-provided prompt
