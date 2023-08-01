@@ -32,30 +32,31 @@ conn = sqlite3.connect('chatbot_database.db')
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
 try:
     toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
+
+    memory = ConversationBufferMemory(memory_key="chat_history")
+
+    suffix = """Begin!"
+
+    Relevant pieces of previous conversation:
+    {chat_history}
+    (You do not need to use these pieces of information if not relevant)
+
+    Question: {input}
+    Thought: I should look at the tables in the database to see what I can query.  Then I should query the schema of the most relevant tables.
+    {agent_scratchpad}
+    """
+
+    agent_executor = create_sql_agent(
+        llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
+        toolkit=toolkit,
+        verbose=True,
+        suffix=suffix,
+        input_variables= ['chat_history', 'input', 'agent_scratchpad'],
+        agent_executor_kwargs={'memory':memory}
+    )
 except:
     print("Please enter valid OpenAI API Key on the sidebar.")
-memory = ConversationBufferMemory(memory_key="chat_history")
-
-suffix = """Begin!"
-
-Relevant pieces of previous conversation:
-{chat_history}
-(You do not need to use these pieces of information if not relevant)
-
-Question: {input}
-Thought: I should look at the tables in the database to see what I can query.  Then I should query the schema of the most relevant tables.
-{agent_scratchpad}
-"""
-
-agent_executor = create_sql_agent(
-    llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
-    toolkit=toolkit,
-    verbose=True,
-    suffix=suffix,
-    input_variables= ['chat_history', 'input', 'agent_scratchpad'],
-    agent_executor_kwargs={'memory':memory}
-)
-
+    
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
