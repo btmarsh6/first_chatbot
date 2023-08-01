@@ -12,6 +12,17 @@ st.set_page_config(page_title='SQL Chatbot')
 with st.sidebar:
     st.title('SQL Chatbot')
     st.write("Use me to help you explore your database!")
+    
+    # OpenAI Credentials
+    if 'OPENAI_API_KEY' in st.secrets:
+        st.success('API key already provided!')
+        # replicate_api = st.secrets['REPLICATE_API_TOKEN']
+    else:
+        OPENAI_API_KEY = st.text_input('Enter OpenAI API key:', type='password')
+        if not len(OPENAI_API_KEY) == 51:
+            st.warning('Please enter your credentials!')
+        else:
+            st.success('Proceed to entering your prompt message!')
 
 # Connect to the database. You can replace the string with whatever database you want the chatbot to use.
 conn = sqlite3.connect('chatbot_database.db')
