@@ -30,8 +30,10 @@ conn = sqlite3.connect('chatbot_database.db')
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
-
+try:
+    toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
+except:
+    print("Please enter valid OpenAI API Key on the sidebar.")
 memory = ConversationBufferMemory(memory_key="chat_history")
 
 suffix = """Begin!"
