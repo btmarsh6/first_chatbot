@@ -30,7 +30,7 @@ conn = sqlite3.connect('chatbot_database.db')
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
+toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
 
 memory = ConversationBufferMemory(memory_key="chat_history")
 
@@ -46,7 +46,7 @@ Thought: I should look at the tables in the database to see what I can query.  T
 """
 
 agent_executor = create_sql_agent(
-    llm=OpenAI(temperature=0),
+    llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
     toolkit=toolkit,
     verbose=True,
     suffix=suffix,
