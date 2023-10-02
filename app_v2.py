@@ -27,6 +27,32 @@ with st.sidebar:
 # Connect to the database. You can replace the string with whatever database you want the chatbot to use.
 conn = sqlite3.connect('chatbot_database.db')
 
+
+# Create the agent executor
+db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
+toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
+memory = ConversationBufferMemory(memory_key="chat_history")
+
+suffix = """Begin!"
+
+Relevant pieces of previous conversation:
+{chat_history}
+(You do not need to use these pieces of information if not relevant)
+
+Question: {input}
+Thought: I should look at the tables in the database to see what I can query.  Then, I should query the schema of the most relevant tables.
+{agent_scratchpad}
+"""
+
+agent_executor = create_sql_agent(
+    llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
+    toolkit=toolkit,
+    verbose=True,
+    suffix=suffix,
+    input_variables=['chat_history', 'input', 'agent_scratchpad'],
+    agent_executor_kwargs={'memory': memory}
+)
+
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
@@ -43,31 +69,12 @@ st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 # Function for generating response
 @st.cache_resource
 def generate_response(prompt_input):
-    # Create the agent executor
-    db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-    toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
-    memory = ConversationBufferMemory(memory_key="chat_history")
-
-    suffix = """Begin!"
-
-    Relevant pieces of previous conversation:
-    {chat_history}
-    (You do not need to use these pieces of information if not relevant)
-
-    Question: {input}
-    Thought: I should look at the tables in the database to see what I can query.  Then, I should query the schema of the most relevant tables.
-    {agent_scratchpad}
-    """
-
-    agent_executor = create_sql_agent(
-        llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
-        toolkit=toolkit,
-        verbose=True,
-        suffix=suffix,
-        input_variables=['chat_history', 'input', 'agent_scratchpad'],
-        agent_executor_kwargs={'memory': memory}
-    )
-
+    # string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
+    # for dict_message in st.session_state.messages:
+    #     if dict_message["role"] == "user":
+    #         string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
+    #     else:
+    #         string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
     memory.load_memory_variables({})
     output = agent_executor.run(prompt_input)
     return output
