@@ -67,7 +67,6 @@ def clear_chat_history():
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function for generating response
-@st.cache_resource
 def generate_response(prompt_input):
     # string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
     # for dict_message in st.session_state.messages:
