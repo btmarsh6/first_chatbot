@@ -40,7 +40,7 @@ Relevant pieces of previous conversation:
 (You do not need to use these pieces of information if not relevant)
 
 Question: {input}
-Thought: I should look at the tables in the database to see what I can query.  Then I should query the schema of the most relevant tables.
+Thought: I should look at the tables in the database to see what I can query.  Then, I should query the schema of the most relevant tables.
 {agent_scratchpad}
 """
 
@@ -49,8 +49,8 @@ agent_executor = create_sql_agent(
     toolkit=toolkit,
     verbose=True,
     suffix=suffix,
-    input_variables= ['chat_history', 'input', 'agent_scratchpad'],
-    agent_executor_kwargs={'memory':memory}
+    input_variables=['chat_history', 'input', 'agent_scratchpad'],
+    agent_executor_kwargs={'memory': memory}
 )
 
 # Store LLM generated responses
@@ -67,6 +67,7 @@ def clear_chat_history():
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function for generating response
+@st.cache_resource
 def generate_response(prompt_input):
     # string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
     # for dict_message in st.session_state.messages:
