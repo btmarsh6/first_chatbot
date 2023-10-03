@@ -63,40 +63,67 @@ agent_executor = create_sql_agent(
     agent_executor_kwargs={'memory': memory}
 )
 
-# Store LLM generated responses
-if "langchain_messages" not in st.session_state.keys():
-    st.session_state.langchain_messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+# Opening message
+if len(msgs.messages) == 0:
+    msgs.add_ai_message("How can I help you?")
 
-# Display or clear chat messages
-for message in st.session_state.langchain_messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+view_messages = st.expander("View the message contents in session state")
+
+# Render current messages from StreamlitChatMessageHistory
+for msg in msgs.messages:
+    st.chat_message(msg.type).write(msg.content)
+
+if prompt := st.chat_input():
+    st.chat_message("human").write(prompt)
+    response = agent_executor.run(prompt)
+    st.chat_message("ai").write(response)
+
+with view_messages:
+    """
+    Memory initialized with:
+    ```python
+    msgs = StreamlitChatMessageHistory(key="langchain_messages")
+    memory = ConversationBufferMemory(chat_memory=msgs)
+    ```
+
+    Contents of `st.session_state.langchain_messages`:
+    """
+    view_messages.json(st.session_state.langchain_messages)
+
+# # Store LLM generated responses
+# if "langchain_messages" not in st.session_state.keys():
+#     st.session_state.langchain_messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+
+# # Display or clear chat messages
+# for message in st.session_state.langchain_messages:
+#     with st.chat_message(message["role"]):
+#         st.write(message["content"])
 
 def clear_chat_history():
     st.session_state.langchain_messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
-# Function for generating response
-def generate_response(prompt_input):
-    output = agent_executor.run(prompt_input)
-    return output
+# # Function for generating response
+# def generate_response(prompt_input):
+#     output = agent_executor.run(prompt_input)
+#     return output
 
-# User-provided prompt
-if prompt := st.chat_input():
-    st.session_state.langchain_messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.write(prompt)
+# # User-provided prompt
+# if prompt := st.chat_input():
+#     st.session_state.langchain_messages.append({"role": "user", "content": prompt})
+#     with st.chat_message("user"):
+#         st.write(prompt)
 
-# Generate a new response if last message is not from assistant.
-if st.session_state.langchain_messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            response = generate_response(prompt)
-            placeholder = st.empty()
-            full_response = ''
-            for item in response:
-                full_response += item
-                placeholder.markdown(full_response)
-            placeholder.markdown(full_response)
-        message = {"role": "assistant", "content": full_response}
-        st.session_state.langchain_messages.append(message)
+# # Generate a new response if last message is not from assistant.
+# if st.session_state.langchain_messages[-1]["role"] != "assistant":
+#     with st.chat_message("assistant"):
+#         with st.spinner("Thinking..."):
+#             response = generate_response(prompt)
+#             placeholder = st.empty()
+#             full_response = ''
+#             for item in response:
+#                 full_response += item
+#                 placeholder.markdown(full_response)
+#             placeholder.markdown(full_response)
+#         message = {"role": "assistant", "content": full_response}
+#         st.session_state.langchain_messages.append(message)
