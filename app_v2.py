@@ -50,9 +50,9 @@ for msg in msgs.messages:
     st.chat_message(msg.type).write(msg.content)
 
 if prompt := st.chat_input():
-    st.chat_message("human").write(prompt)
+    st.chat_message("user").append(prompt)
     response = agent_executor.run(prompt)
-    st.chat_message("ai").write(response)
+    st.chat_message("assistant").append(response)
 
 with view_messages:
     view_messages.json(st.session_state.langchain_messages)
