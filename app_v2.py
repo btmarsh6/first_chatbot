@@ -45,9 +45,12 @@ if len(msgs.messages) == 0:
 
 view_messages = st.expander("View the message contents in session state")
 
+# Get message content for display
+message_content = [msg.content for msg in msgs.messages]
+
 # Render current messages from StreamlitChatMessageHistory
-for msg in msgs.messages:
-    st.chat_message(msg.type).write(msg.content)
+for content in message_content:
+    st.chat_message.write(content)
 
 if prompt := st.chat_input():
     st.chat_message("user").write(prompt)
