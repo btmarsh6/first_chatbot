@@ -53,9 +53,11 @@ for content in message_content:
     st.write(content)
 
 if prompt := st.chat_input():
-    st.chat_message("user").write(prompt)
+    with st.chat_message("user"):
+        st.write(prompt)
     response = agent_executor.run(prompt)
-    st.chat_message("assistant").write(response)
+    with st.chat_message("assistant"):
+        st.write(response)
 
 with view_messages:
     """
@@ -69,4 +71,7 @@ with view_messages:
     """
     view_messages.json(st.session_state.langchain_messages)
 
-st.sidebar.button('Clear Chat History', on_click=msgs.clear())
+def clear_chat_history():
+    msgs.clear()
+    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
