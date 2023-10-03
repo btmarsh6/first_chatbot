@@ -50,7 +50,7 @@ message_content = [msg.content for msg in msgs.messages]
 
 # Render current messages from StreamlitChatMessageHistory
 for content in message_content:
-    st.chat_message.write(content)
+    st.write(content)
 
 if prompt := st.chat_input():
     st.chat_message("user").write(prompt)
