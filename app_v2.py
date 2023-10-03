@@ -5,6 +5,7 @@ from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
 from langchain.memory import ConversationBufferMemory
+from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 
 
 # App Title and Page Config
@@ -13,16 +14,24 @@ with st.sidebar:
     st.title('SQL Chatbot')
     st.write("Use me to help you explore your database!")
     
-    # OpenAI Credentials
-    if 'OPENAI_API_KEY' in st.secrets:
-        st.success('API key already provided!')
-        # replicate_api = st.secrets['REPLICATE_API_TOKEN']
-    else:
-        OPENAI_API_KEY = st.text_input('Enter OpenAI API key:', type='password')
-        if not len(OPENAI_API_KEY) == 51:
-            st.warning('Please enter your credentials!')
-        else:
-            st.success('Proceed to entering your prompt message!')
+# OpenAI Credentials
+if "openai_api_key" in st.secrets:
+    openai_api_key = st.secrets.openai_api_key
+else:
+    openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
+if not openai_api_key:
+    st.info("Enter an OpenAI API Key to continue")
+    st.stop()
+    
+    # if 'OPENAI_API_KEY' in st.secrets:
+    #     st.success('API key already provided!')
+    #     # replicate_api = st.secrets['REPLICATE_API_TOKEN']
+    # else:
+    #     OPENAI_API_KEY = st.text_input('Enter OpenAI API key:', type='password')
+    #     if not len(OPENAI_API_KEY) == 51:
+    #         st.warning('Please enter your credentials!')
+    #     else:
+    #         st.success('Proceed to entering your prompt message!')
 
 # Connect to the database. You can replace the string with whatever database you want the chatbot to use.
 conn = sqlite3.connect('chatbot_database.db')
@@ -30,8 +39,9 @@ conn = sqlite3.connect('chatbot_database.db')
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY))
-memory = ConversationBufferMemory(memory_key="chat_history")
+toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=openai_api_key))
+msgs = StreamlitChatMessageHistory(key="langchain_messages")
+memory = ConversationBufferMemory(chat_memory=msgs)
 
 suffix = """Begin!"
 
@@ -45,7 +55,7 @@ Thought: I should look at the tables in the database to see what I can query.  T
 """
 
 agent_executor = create_sql_agent(
-    llm=OpenAI(temperature=0, openai_api_key=OPENAI_API_KEY),
+    llm=OpenAI(temperature=0, openai_api_key=openai_api_key),
     toolkit=toolkit,
     verbose=True,
     suffix=suffix,
@@ -54,38 +64,31 @@ agent_executor = create_sql_agent(
 )
 
 # Store LLM generated responses
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+if "langchain_messages" not in st.session_state.keys():
+    st.session_state.langchain_messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 
 # Display or clear chat messages
-for message in st.session_state.messages:
+for message in st.session_state.langchain_messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
 def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+    st.session_state.langchain_messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function for generating response
 def generate_response(prompt_input):
-    # string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-    # for dict_message in st.session_state.messages:
-    #     if dict_message["role"] == "user":
-    #         string_dialogue += "User: " + dict_message["content"] + "\\n\\n"
-    #     else:
-    #         string_dialogue += "Assistant: " + dict_message["content"] + "\\n\\n"
-    memory.load_memory_variables({})
     output = agent_executor.run(prompt_input)
     return output
 
 # User-provided prompt
 if prompt := st.chat_input():
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.langchain_messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
 
 # Generate a new response if last message is not from assistant.
-if st.session_state.messages[-1]["role"] != "assistant":
+if st.session_state.langchain_messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             response = generate_response(prompt)
@@ -96,4 +99,4 @@ if st.session_state.messages[-1]["role"] != "assistant":
                 placeholder.markdown(full_response)
             placeholder.markdown(full_response)
         message = {"role": "assistant", "content": full_response}
-        st.session_state.messages.append(message)
+        st.session_state.langchain_messages.append(message)
