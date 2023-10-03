@@ -50,11 +50,20 @@ for msg in msgs.messages:
     st.chat_message(msg.type).write(msg.content)
 
 if prompt := st.chat_input():
-    st.chat_message("user").append(prompt)
+    st.chat_message("user").write(prompt)
     response = agent_executor.run(prompt)
-    st.chat_message("assistant").append(response)
+    st.chat_message("assistant").write(response)
 
 with view_messages:
+    """
+    Memory initialized with:
+    ```python
+    msgs = StreamlitChatMessageHistory(key="langchain_messages")
+    memory = ConversationBufferMemory(chat_memory=msgs)
+    ```
+
+    Contents of `st.session_state.langchain_messages`:
+    """
     view_messages.json(st.session_state.langchain_messages)
 
 st.sidebar.button('Clear Chat History', on_click=msgs.clear())
