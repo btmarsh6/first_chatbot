@@ -43,23 +43,10 @@ toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=ope
 msgs = StreamlitChatMessageHistory(key="langchain_messages")
 memory = ConversationBufferMemory(chat_memory=msgs)
 
-suffix = """Begin!"
-
-Relevant pieces of previous conversation:
-{chat_history}
-(You do not need to use these pieces of information if not relevant)
-
-Question: {input}
-Thought: I should look at the tables in the database to see what I can query.  Then, I should query the schema of the most relevant tables.
-{agent_scratchpad}
-"""
-
 agent_executor = create_sql_agent(
     llm=OpenAI(temperature=0, openai_api_key=openai_api_key),
     toolkit=toolkit,
     verbose=True,
-    suffix=suffix,
-    input_variables=['chat_history', 'input', 'agent_scratchpad'],
     agent_executor_kwargs={'memory': memory}
 )
 
