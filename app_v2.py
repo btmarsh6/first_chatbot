@@ -55,7 +55,6 @@ for msg in msgs.messages:
 if prompt := st.chat_input():
     with st.chat_message("user"):
         st.write(prompt)
-        msgs.add
     response = agent_executor.run(prompt)
     with st.chat_message("assistant"):
         st.write(response)
