@@ -28,7 +28,8 @@ conn = sqlite3.connect('chatbot_database.db')
 
 # Create the agent executor
 db = SQLDatabase.from_uri("sqlite:///./chatbot_database.db")
-toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0, openai_api_key=openai_api_key))
+toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0,
+                                               openai_api_key=openai_api_key))
 msgs = StreamlitChatMessageHistory(key="langchain_messages")
 memory = ConversationBufferMemory(chat_memory=msgs)
 
@@ -45,19 +46,21 @@ if len(msgs.messages) == 0:
 
 view_messages = st.expander("View the message contents in session state")
 
-# Get message content for display
-message_content = [msg.content for msg in msgs.messages]
+# # Get message content for display
+# message_content = [msg.content for msg in msgs.messages]
 
-# Render current messages from StreamlitChatMessageHistory
-for content in message_content:
-    st.write(content)
+# # Render current messages from StreamlitChatMessageHistory
+# for content in message_content:
+#     st.write(content)
 
 if prompt := st.chat_input():
     with st.chat_message("user"):
         st.write(prompt)
+        msgs.add
     response = agent_executor.run(prompt)
     with st.chat_message("assistant"):
         st.write(response)
+
 
 with view_messages:
     """
@@ -71,7 +74,10 @@ with view_messages:
     """
     view_messages.json(st.session_state.langchain_messages)
 
+
 def clear_chat_history():
     msgs.clear()
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+
+
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
