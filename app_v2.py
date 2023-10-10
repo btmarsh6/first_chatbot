@@ -46,19 +46,17 @@ if len(msgs.messages) == 0:
 
 view_messages = st.expander("View the message contents in session state")
 
-# # Get message content for display
-# message_content = [msg.content for msg in msgs.messages]
 
-# # Render current messages from StreamlitChatMessageHistory
-# for content in message_content:
-#     st.write(content)
+# Render current messages from StreamlitChatMessageHistory
+for msg in msgs.messages:
+    st.chat_message(msg.type).write(msg.content)
 
 if prompt := st.chat_input():
-    with st.chat_message("user"):
+    with st.chat_message("human"):
         st.write(prompt)
         msgs.add
     response = agent_executor.run(prompt)
-    with st.chat_message("assistant"):
+    with st.chat_message("ai"):
         st.write(response)
 
 
@@ -77,7 +75,7 @@ with view_messages:
 
 def clear_chat_history():
     msgs.clear()
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+    st.session_state.messages = [{"role": "ai", "content": "How may I assist you today?"}]
 
 
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
